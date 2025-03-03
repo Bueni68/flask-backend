@@ -1,0 +1,21 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+#status {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.station {
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 20px;
+    width: 150px;
+    color: white;
+}
+
+.frei { background-color: green; }
+.belegt { background-color: red; }
