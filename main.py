@@ -103,17 +103,22 @@ def update_status():
 # API zum Speichern der geplanten Verlassenszeit
 @app.route("/set_leave_time", methods=["POST"])
 def set_leave_time():
-    if not request.is_json:
-        return jsonify({"error": "JSON-Daten erwartet"}), 400
-
     data = request.json
-    leave_time = data.get("leave_time")
-
-    if not leave_time:
-        return jsonify({"error": "Keine gültige Uhrzeit übermittelt"}), 400
-
+    station = data["station"]
+    leave_time = data["leave_time"]
+    
     current_data = load_data()
-    current_data["estimated_times"].append(leave_time)  # Uhrzeit speichern
+
+    # Prüfen, ob die Station existiert
+    if station not in current_data["stations"]:
+        return jsonify({"error": "Ungültige Station!"}), 400
+
+    # Prüfen, ob die ausgewählte Station belegt ist
+    if current_data["stations"].get(station) != "belegt":
+        return jsonify({"error": f"{station} ist derzeit nicht belegt. Bitte wähle eine andere Station."}), 400
+
+    # Speichern der Verlassenszeit für die spezifische Station
+    current_data["estimated_times"].append(f"{station}: {leave_time}")
     save_data(current_data)
 
     return jsonify({"message": "Verlassenszeit gespeichert"}), 200

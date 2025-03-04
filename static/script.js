@@ -59,22 +59,30 @@ function updateStatus() {
 
 // 🔹 Funktion zum Speichern der geplanten Verlassenszeit
 function sendLeaveTime() {
+    let station = document.getElementById("station_select").value;
     let leaveTime = document.getElementById("leave_time").value;
+
+    if (!station) {
+        alert("Bitte eine Station auswählen!");
+        return;
+    }
     if (!leaveTime) {
-        alert("Bitte eine gültige Uhrzeit eingeben!");
+        alert("Bitte eine Uhrzeit eingeben!");
         return;
     }
 
     fetch("/set_leave_time", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ leave_time: leaveTime })
+        body: JSON.stringify({ station: station, leave_time: leaveTime })
     })
     .then(response => response.json())
     .then(data => {
-        alert("✅ Verlassenszeit gespeichert!");
-        console.log("Verlassenszeit gespeichert:", data);
-        updateStatus();  // Direkt die Anzeige aktualisieren
+        if (data.error) {
+            alert(data.error);  // Fehler anzeigen, falls die Station nicht belegt ist
+        } else {
+            alert("Verlassenszeit gespeichert!");
+        }
     })
     .catch(error => console.error("Fehler:", error));
 }

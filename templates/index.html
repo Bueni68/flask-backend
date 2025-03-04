@@ -17,13 +17,23 @@
     <h3>Letzte Nutzer:</h3>
     <ul id="history"></ul>
 
-    <h2>Geplante Verlassenszeit:</h2>
-    <input type="time" id="leave_time">
-    <button onclick="sendLeaveTime()">Speichern</button>
-    <p id="confirmation" style="color: green; display: none;">✅ Verlassenszeit gespeichert!</p>
+    <h2>Geplante Verlassenszeit setzen</h2>
+<label for="station_select">Station:</label>
+<select id="station_select">
+    <option value="">-- Wähle eine Station --</option>
+    <option value="Station 1">Station 1</option>
+    <option value="Station 2">Station 2</option>
+    <option value="Station 3">Station 3</option>
+    <option value="Station 4">Station 4</option>
+</select>
 
-    <h3>Voraussichtliche Freigabezeiten:</h3>
-    <ul id="estimated_times"></ul>
+<label for="leave_time">Uhrzeit:</label>
+<input type="time" id="leave_time">
+
+<button onclick="sendLeaveTime()">Speichern</button>
+
+<h3>Voraussichtliche Freigabezeiten:</h3>
+<ul id="estimated_times"></ul>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
