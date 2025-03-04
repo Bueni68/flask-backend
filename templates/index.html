@@ -11,9 +11,21 @@
     <div id="status">
         <p>Lade Daten...</p>
     </div>
+
     <h2>Personen im Labor: <span id="people_count">0</span></h2>
+
     <h3>Letzte Nutzer:</h3>
     <ul id="history"></ul>
+
+    <h2>Geplante Verlassenszeit:</h2>
+    <input type="time" id="leave_time">
+    <button onclick="sendLeaveTime()">Speichern</button>
+    <p id="confirmation" style="color: green; display: none;">✅ Verlassenszeit gespeichert!</p>
+
+    <h3>Voraussichtliche Freigabezeiten:</h3>
+    <ul id="estimated_times"></ul>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
+

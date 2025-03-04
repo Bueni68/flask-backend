@@ -1,21 +1,75 @@
+/* Allgemeines Styling */
 body {
     font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
     text-align: center;
-}
-
-#status {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-
-.station {
     padding: 20px;
+}
+
+h1, h2, h3 {
+    color: #333;
+}
+
+/* Stationsanzeige */
+#status {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+/* Styling für die Stationen */
+.station {
+    padding: 15px;
     border-radius: 10px;
-    font-size: 20px;
-    width: 150px;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Farben für den Status */
+.station.frei {
+    background-color: #4caf50;  /* Grün */
     color: white;
 }
 
-.frei { background-color: green; }
-.belegt { background-color: red; }
+.station.belegt {
+    background-color: #e53935;  /* Rot */
+    color: white;
+}
+
+/* Personenanzahl */
+#people_count {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0077cc;
+}
+
+/* Historie-Liste */
+#history {
+    list-style-type: none;
+    padding: 0;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+#history li {
+    background: white;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 5px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile Optimierung */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    #status {
+        grid-template-columns: 1fr;
+    }
+}

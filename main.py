@@ -1,9 +1,24 @@
 from flask import Flask, render_template, jsonify, request
 import json
+import os
+from datetime import datetime
+
+import qrcode
+
+website_url = "https://flask-backend-fga2.onrender.com"  # Meine Render-URL
+
+# QR-Code erstellen
+qr = qrcode.make(website_url)
+
+# QR-Code speichern
+qr.save("static/qrcode.png")
+
+print("✅ QR-Code wurde erstellt: static/qrcode.png")
+
 
 app = Flask(__name__)
 
-# Datei, um Sensordaten zu speichern
+# Datei für Sensordaten-Speicherung
 DATA_FILE = "data.json"
 
 # Hilfsfunktion zum Laden der Daten
@@ -12,14 +27,19 @@ def load_data():
         with open(DATA_FILE, "r") as file:
             return json.load(file)
     except FileNotFoundError:
-        return {"stations": {"Station 1": "frei", "Station 2": "frei"}, "people_count": 0, "history": []}
+        return {
+            "stations": {"Station 1": "frei", "Station 2": "frei"},
+            "people_count": 0,
+            "history": [],
+            "estimated_times": []  # Neue Liste für geplante Verlassenszeiten
+        }
 
 # Hilfsfunktion zum Speichern der Daten
 def save_data(data):
     with open(DATA_FILE, "w") as file:
         json.dump(data, file)
 
-# Webseite anzeigen
+# Hauptseite
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -29,60 +49,76 @@ def index():
 def get_status():
     return jsonify(load_data())
 
-# API zum Aktualisieren der Sensordaten (wird von den Sensoren aufgerufen)
-from datetime import datetime  # Import für Datum & Uhrzeit
-
+# API zum Aktualisieren der Sensordaten (vom ESP32 aufgerufen)
 @app.route("/update", methods=["POST"])
 def update_status():
-    new_data = request.json  
-    current_data = load_data()  
+    if not request.is_json:
+        return jsonify({"error": "JSON-Daten erwartet"}), 400  # Falls keine JSON-Daten kommen
 
-    # 🔴 1️⃣ KOMPLETT-RESET: Belegung & Historie zurücksetzen (nur manuell)
-    if "reset" in new_data and new_data["reset"]:
-        current_data["stations"] = {station: "frei" for station in current_data["stations"]}
-        current_data["people_count"] = 0
-        current_data["history"] = []
+    new_data = request.get_json()
+    current_data = load_data()
+
+    # 1️⃣ RESET (Falls vom ESP gesendet)
+    if new_data.get("reset"):
+        current_data = {
+            "stations": {"Station 1": "frei", "Station 2": "frei"},
+            "people_count": 0,
+            "history": [],
+            "estimated_times": []
+        }
         save_data(current_data)
         return jsonify({"message": "Alle Daten zurückgesetzt!"})
 
-    # 🔵 2️⃣ Stationsstatus aktualisieren (falls gesendet)
+    # 2️⃣ Stationsstatus aktualisieren
     if "stations" in new_data:
         for station, status in new_data["stations"].items():
             current_data["stations"][station] = status  
 
-    # 🔴 3️⃣ Historie aktualisieren & neue Personen setzen automatisch Station auf "belegt"
+    # 3️⃣ Historie aktualisieren (Personen betreten/verlassen)
+    if "history" in new_data:
+        for entry in new_data["history"]:
+            entry["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            if entry["action"] == "Betreten":
+                current_data["stations"][entry["station"]] = "belegt"
+
+        current_data["history"] = new_data["history"] + current_data["history"]
+
+    # 🔴 Station direkt auf "frei" setzen, wenn eine Person die Station verlässt
     if "history" in new_data:
         for entry in new_data["history"]:
             entry["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
             if entry["action"] == "Betreten":
                 current_data["stations"][entry["station"]] = "belegt"  # 🔴 Station belegen
+        
+            elif entry["action"] == "Verlassen":
+                current_data["stations"][entry["station"]] = "frei"  # 🔵 Station sofort freigeben
 
         current_data["history"] = new_data["history"] + current_data["history"]  # Neueste zuerst
-
-    # 🔴 4️⃣ Überprüfen, ob eine Station "frei" werden kann  
-    station_occupancy = {station: set() for station in current_data["stations"]}  # Speichert aktive Personen pro Station
-
-    # Durchlaufe die Historie und tracke Personen in den Stationen
-    for entry in current_data["history"]:
-        name = entry["name"]
-        station = entry["station"]
-        action = entry["action"]
-
-        if action == "Betreten":
-            station_occupancy[station].add(name)  # Füge Person zur Station hinzu
-        elif action == "Verlassen":
-            station_occupancy[station].discard(name)  # Entferne Person aus der Station
-
-    # Falls eine Station leer ist, setze sie auf "frei"
-    for station, people in station_occupancy.items():
-        if not people:  # Keine Personen mehr in der Station
-            current_data["stations"][station] = "frei"
 
     save_data(current_data)
     return jsonify({"message": "Daten aktualisiert!"})
 
+# API zum Speichern der geplanten Verlassenszeit
+@app.route("/set_leave_time", methods=["POST"])
+def set_leave_time():
+    if not request.is_json:
+        return jsonify({"error": "JSON-Daten erwartet"}), 400
 
+    data = request.json
+    leave_time = data.get("leave_time")
 
+    if not leave_time:
+        return jsonify({"error": "Keine gültige Uhrzeit übermittelt"}), 400
+
+    current_data = load_data()
+    current_data["estimated_times"].append(leave_time)  # Uhrzeit speichern
+    save_data(current_data)
+
+    return jsonify({"message": "Verlassenszeit gespeichert"}), 200
+
+# Starten des Servers (Render nutzt einen dynamischen Port)
 if __name__ == "__main__":
-    app.run(debug=True, port=5005)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
