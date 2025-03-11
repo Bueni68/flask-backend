@@ -73,7 +73,8 @@ def get_status():
     return jsonify({
         "stations": data["stations"],
         "occupied_stations": occupied_stations,  # Anzahl der belegten Stationen
-        "history": data["history"]
+        "history": data["history"],
+        "estimated_times": data["estimated_times"]  # estimated_times anzeigen
     })
 
 # API zum Aktualisieren der Sensordaten (vom ESP32 aufgerufen)
