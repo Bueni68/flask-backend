@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify, request
 import json
 import os
 from datetime import datetime
+import pytz
 import qrcode
 
 website_url = "https://flask-backend-fga2.onrender.com"  # Deine Render-URL
@@ -86,6 +87,9 @@ def update_status():
     new_data = request.get_json()
     current_data = load_data()
 
+    # Hole die Zeitzone für Deutschland
+    germany_tz = pytz.timezone('Europe/Berlin')
+
     # 1️⃣ RESET (Falls vom ESP gesendet)
     if new_data.get("reset"):
         current_data = {
@@ -105,7 +109,8 @@ def update_status():
     # 3️⃣ Historie aktualisieren (Personen betreten/verlassen)
     if "history" in new_data:
         for entry in new_data["history"]:
-            entry["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # Zeitstempel mit der richtigen Zeitzone (Deutschland)
+            entry["timestamp"] = datetime.now(germany_tz).strftime("%Y-%m-%d %H:%M:%S")
 
             # 🛑 NEU: Doppelten Eintrag verhindern!
             if entry not in current_data["history"]:  
