@@ -151,6 +151,9 @@ def set_leave_time():
         if current_data["stations"].get(station) != "belegt":
             return jsonify({"error": f"{station} ist derzeit nicht belegt. Bitte wähle eine andere Station."}), 400
 
+        # Debug-Ausgabe: Überprüfen, was in current_data gespeichert ist
+        print("Aktuelle Daten vor dem Speichern:", current_data)
+
         # Speichern der Verlassenszeit für die spezifische Station
         current_data["estimated_times"].append(f"{station}: {leave_time}")
         save_data(current_data)
