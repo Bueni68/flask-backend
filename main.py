@@ -2,10 +2,9 @@ from flask import Flask, render_template, jsonify, request
 import json
 import os
 from datetime import datetime
-
 import qrcode
 
-website_url = "https://flask-backend-fga2.onrender.com"  # Meine Render-URL
+website_url = "https://flask-backend-fga2.onrender.com"  # Deine Render-URL
 
 # QR-Code erstellen
 qr = qrcode.make(website_url)
@@ -23,16 +22,31 @@ DATA_FILE = "data.json"
 
 # Hilfsfunktion zum Laden der Daten
 def load_data():
+    # Standardwerte definieren, falls die Datei nicht existiert
+    default_data = {
+        "stations": {"Station 1": "frei", "Station 2": "frei"},
+        "people_count": 0,
+        "history": [],
+        "estimated_times": []
+    }
+
+    # Versuchen, die Datei zu öffnen und die Daten zu laden
     try:
         with open(DATA_FILE, "r") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return {
-            "stations": {"Station 1": "frei", "Station 2": "frei"},
-            "people_count": 0,
-            "history": [],
-            "estimated_times": []  # Neue Liste für geplante Verlassenszeiten
-        }
+            data = json.load(file)
+
+            # Falls "estimated_times" fehlt, füge es als leere Liste hinzu
+            if "estimated_times" not in data:
+                data["estimated_times"] = []
+
+            # Falls die gespeicherten Daten fehlerhaft sind (z. B. zu viele Stationen), zurücksetzen
+            if "stations" not in data or len(data["stations"]) > 2:
+                return default_data
+
+            return data
+    except (FileNotFoundError, json.JSONDecodeError):
+        # Falls Datei nicht existiert oder fehlerhaft ist, Standarddaten zurückgeben
+        return default_data
 
 # Hilfsfunktion zum Speichern der Daten
 def save_data(data):
@@ -79,6 +93,12 @@ def update_status():
         for entry in new_data["history"]:
             entry["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+            # 🛑 NEU: Doppelten Eintrag verhindern!
+            if current_data["history"]:
+                last_entry = current_data["history"][0]  # Letzter Eintrag
+                if last_entry["action"] == entry["action"] and last_entry["station"] == entry["station"]:
+                    return jsonify({"message": "Doppelter Eintrag erkannt, nicht gespeichert!"})
+
             if entry["action"] == "Betreten":
                 current_data["stations"][entry["station"]] = "belegt"
 
@@ -103,25 +123,28 @@ def update_status():
 # API zum Speichern der geplanten Verlassenszeit
 @app.route("/set_leave_time", methods=["POST"])
 def set_leave_time():
-    data = request.json
-    station = data["station"]
-    leave_time = data["leave_time"]
-    
-    current_data = load_data()
+    try:
+        data = request.json  # Empfange die Daten im JSON-Format
+        station = data["station"]  # Hol die Station
+        leave_time = data["leave_time"]  # Hol die Verlassenszeit
 
-    # Prüfen, ob die Station existiert
-    if station not in current_data["stations"]:
-        return jsonify({"error": "Ungültige Station!"}), 400
+        current_data = load_data()
 
-    # Prüfen, ob die ausgewählte Station belegt ist
-    if current_data["stations"].get(station) != "belegt":
-        return jsonify({"error": f"{station} ist derzeit nicht belegt. Bitte wähle eine andere Station."}), 400
+        # Prüfen, ob die Station existiert
+        if station not in current_data["stations"]:
+            return jsonify({"error": "Ungültige Station!"}), 400
 
-    # Speichern der Verlassenszeit für die spezifische Station
-    current_data["estimated_times"].append(f"{station}: {leave_time}")
-    save_data(current_data)
+        # Prüfen, ob die ausgewählte Station belegt ist
+        if current_data["stations"].get(station) != "belegt":
+            return jsonify({"error": f"{station} ist derzeit nicht belegt. Bitte wähle eine andere Station."}), 400
 
-    return jsonify({"message": "Verlassenszeit gespeichert"}), 200
+        # Speichern der Verlassenszeit für die spezifische Station
+        current_data["estimated_times"].append(f"{station}: {leave_time}")
+        save_data(current_data)
+
+        return jsonify({"message": "Verlassenszeit gespeichert"}), 200
+    except Exception as e:
+        return jsonify({"error": f"Fehler beim Speichern der Verlassenszeit: {e}"}), 500
 
 # Starten des Servers (Render nutzt einen dynamischen Port)
 if __name__ == "__main__":

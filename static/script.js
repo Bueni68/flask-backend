@@ -71,6 +71,8 @@ function sendLeaveTime() {
         return;
     }
 
+    console.log("Sende Daten:", { station: station, leave_time: leaveTime });  // Ausgabe der zu sendenden Daten
+
     fetch("/set_leave_time", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,13 +80,17 @@ function sendLeaveTime() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log("Server-Antwort:", data);  // Antwort des Servers anzeigen
         if (data.error) {
             alert(data.error);  // Fehler anzeigen, falls die Station nicht belegt ist
         } else {
             alert("Verlassenszeit gespeichert!");
         }
     })
-    .catch(error => console.error("Fehler:", error));
+    .catch(error => {
+        console.error("Fehler:", error);
+        alert("Es gab einen Fehler bei der Anfrage!");
+    });
 }
 
 updateStatus(); // Erstes Update sofort ausführen
