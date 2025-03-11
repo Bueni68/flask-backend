@@ -108,31 +108,20 @@ def update_status():
             entry["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
             # 🛑 NEU: Doppelten Eintrag verhindern!
-            if current_data["history"]:
-                last_entry = current_data["history"][0]  # Letzter Eintrag
-                if last_entry["action"] == entry["action"] and last_entry["station"] == entry["station"]:
-                    return jsonify({"message": "Doppelter Eintrag erkannt, nicht gespeichert!"})
+            if entry not in current_data["history"]:  
+                current_data["history"].insert(0, entry)  # Neueste zuerst speichern
+            else:
+                print("⚠️ Doppelter Eintrag erkannt, wird ignoriert:", entry)
 
             if entry["action"] == "Betreten":
                 current_data["stations"][entry["station"]] = "belegt"
 
-        current_data["history"] = new_data["history"] + current_data["history"]
-
-    # 🔴 Station direkt auf "frei" setzen, wenn eine Person die Station verlässt
-    if "history" in new_data:
+        # 🔴 Station direkt auf "frei" setzen, wenn eine Person die Station verlässt
         for entry in new_data["history"]:
-            entry["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-            if entry["action"] == "Betreten":
-                current_data["stations"][entry["station"]] = "belegt"  # 🔴 Station belegen
-        
-            elif entry["action"] == "Verlassen":
-                current_data["stations"][entry["station"]] = "frei"  # 🔵 Station sofort freigeben
-
-        current_data["history"] = new_data["history"] + current_data["history"]  # Neueste zuerst
+            if entry["action"] == "Verlassen":
+                current_data["stations"][entry["station"]] = "frei"
 
     save_data(current_data)
-    print("Gespeicherte Daten:", current_data)  # Debugging-Ausgabe
     return jsonify({"message": "Daten aktualisiert!"})
 
 # API zum Speichern der geplanten Verlassenszeit
