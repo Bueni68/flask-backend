@@ -132,6 +132,7 @@ def update_status():
         current_data["history"] = new_data["history"] + current_data["history"]  # Neueste zuerst
 
     save_data(current_data)
+    print("Gespeicherte Daten:", current_data)  # Debugging-Ausgabe
     return jsonify({"message": "Daten aktualisiert!"})
 
 # API zum Speichern der geplanten Verlassenszeit

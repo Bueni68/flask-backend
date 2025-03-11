@@ -45,8 +45,8 @@ function updateStatus() {
             if (Array.isArray(data.estimated_times)) {
                 data.estimated_times.forEach(time => {
                     let li = document.createElement("li");
-                    li.textContent = `Station wird frei um ca. ${time}`;
-                    estimatedList.appendChild(li);
+                    li.textContent = time + " Uhr";
+                    estimatedList.insertBefore(li, estimatedList.firstChild);
                 });
             } else {
                 estimatedList.innerHTML = "<li>Keine geplanten Zeiten</li>";
