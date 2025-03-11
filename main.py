@@ -53,6 +53,10 @@ def save_data(data):
     with open(DATA_FILE, "w") as file:
         json.dump(data, file)
 
+# Hilfsfunktion zum Zählen der belegten Stationen
+def count_occupied_stations(stations):
+    return sum(1 for status in stations.values() if status == "belegt")
+
 # Hauptseite
 @app.route("/")
 def index():
@@ -61,7 +65,16 @@ def index():
 # API zum Abrufen des Status
 @app.route("/status", methods=["GET"])
 def get_status():
-    return jsonify(load_data())
+    data = load_data()
+    
+    # Berechnung der belegten Stationen
+    occupied_stations = count_occupied_stations(data["stations"])
+    
+    return jsonify({
+        "stations": data["stations"],
+        "occupied_stations": occupied_stations,  # Anzahl der belegten Stationen
+        "history": data["history"]
+    })
 
 # API zum Aktualisieren der Sensordaten (vom ESP32 aufgerufen)
 @app.route("/update", methods=["POST"])

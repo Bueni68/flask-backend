@@ -22,7 +22,8 @@ function updateStatus() {
                 statusDiv.appendChild(div);
             });
 
-            document.getElementById("people_count").textContent = data.people_count;
+            // **Anzeige der belegten Stationen**:
+            document.getElementById("occupied_stations_count").textContent = `Anzahl belegter Stationen: ${data.occupied_stations}`;
 
             let historyList = document.getElementById("history");
             historyList.innerHTML = "";
