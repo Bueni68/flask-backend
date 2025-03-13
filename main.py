@@ -5,16 +5,12 @@ from datetime import datetime
 import pytz
 import qrcode
 
-website_url = "https://flask-backend-fga2.onrender.com"  # Deine Render-URL
+website_url = "https://flask-backend-fga2.onrender.com"
 
-# QR-Code erstellen
+# QR-Code erstellen & speichern
 qr = qrcode.make(website_url)
-
-# QR-Code speichern
 qr.save("static/qrcode.png")
-
-print("✅ QR-Code wurde erstellt: static/qrcode.png")
-
+print(" QR-Code wurde erstellt: static/qrcode.png")
 
 app = Flask(__name__)
 
@@ -73,9 +69,9 @@ def get_status():
     
     return jsonify({
         "stations": data["stations"],
-        "occupied_stations": occupied_stations,  # Anzahl der belegten Stationen
+        "occupied_stations": occupied_stations,
         "history": data["history"],
-        "estimated_times": data["estimated_times"]  # estimated_times anzeigen
+        "estimated_times": data["estimated_times"]
     })
 
 # API zum Aktualisieren der Sensordaten (vom ESP32 aufgerufen)
@@ -90,7 +86,7 @@ def update_status():
     # Hole die Zeitzone für Deutschland
     germany_tz = pytz.timezone('Europe/Berlin')
 
-    # 1️⃣ RESET (Falls vom ESP gesendet)
+    # 1️. RESET (Falls vom ESP gesendet)
     if new_data.get("reset"):
         current_data = {
             "stations": {"Station 1": "frei", "Station 2": "frei"},
@@ -101,27 +97,27 @@ def update_status():
         save_data(current_data)
         return jsonify({"message": "Alle Daten zurückgesetzt!"})
 
-    # 2️⃣ Stationsstatus aktualisieren
+    # 2️. Stationsstatus aktualisieren
     if "stations" in new_data:
         for station, status in new_data["stations"].items():
             current_data["stations"][station] = status  
 
-    # 3️⃣ Historie aktualisieren (Personen betreten/verlassen)
+    # 3️. Historie aktualisieren (Personen betreten/verlassen)
     if "history" in new_data:
         for entry in new_data["history"]:
             # Zeitstempel mit der richtigen Zeitzone (Deutschland)
             entry["timestamp"] = datetime.now(germany_tz).strftime("%Y-%m-%d %H:%M:%S")
 
-            # 🛑 NEU: Doppelten Eintrag verhindern!
+            # Doppelten Eintrag verhindern
             if entry not in current_data["history"]:  
                 current_data["history"].insert(0, entry)  # Neueste zuerst speichern
             else:
-                print("⚠️ Doppelter Eintrag erkannt, wird ignoriert:", entry)
+                print(" Doppelter Eintrag erkannt, wird ignoriert:", entry)
 
             if entry["action"] == "Betreten":
                 current_data["stations"][entry["station"]] = "belegt"
 
-        # 🔴 Station direkt auf "frei" setzen, wenn eine Person die Station verlässt
+        # Station direkt auf "frei" setzen, wenn eine Person die Station verlässt
         for entry in new_data["history"]:
             if entry["action"] == "Verlassen":
                 current_data["stations"][entry["station"]] = "frei"

@@ -38,7 +38,7 @@ function updateStatus() {
                 historyList.innerHTML = "<li>Keine Historie vorhanden</li>";
             }
 
-            // 🔴 Aktualisiert die Liste der geplanten Verlassenszeiten
+            // Aktualisiert die Liste der geplanten Verlassenszeiten
             let estimatedList = document.getElementById("estimated_times");
             estimatedList.innerHTML = "";
 
