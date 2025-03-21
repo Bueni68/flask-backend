@@ -153,6 +153,38 @@ def set_leave_time():
         return jsonify({"message": "Verlassenszeit gespeichert"}), 200
     except Exception as e:
         return jsonify({"error": f"Fehler beim Speichern der Verlassenszeit: {e}"}), 500
+    
+# API zum Speichern einer neuer RFID-Karten
+@app.route("/add_rfid", methods=["POST"])
+def add_rfid():
+    """Fügt eine neue RFID-Karte mit Namen zur JSON-Datei hinzu."""
+    try:
+        data = request.get_json()
+        rfid_uid = data.get("rfid_uid")
+        name = data.get("name")
+
+        if not rfid_uid or not name:
+            return jsonify({"error": "RFID-UID und Name erforderlich!"}), 400
+
+        # Bestehende RFID-Daten laden
+        with open("rfid_users.json", "r") as file:
+            user_data = json.load(file)
+
+        # Prüfen, ob UID bereits existiert
+        if rfid_uid in user_data:
+            return jsonify({"error": "RFID-Karte existiert bereits!"}), 400
+
+        # Neue UID mit Namen speichern
+        user_data[rfid_uid] = name
+
+        # Aktualisierte Daten zurück in JSON-Datei speichern
+        with open("rfid_users.json", "w") as file:
+            json.dump(user_data, file, indent=4)
+
+        return jsonify({"message": f"RFID-Karte {rfid_uid} wurde als {name} gespeichert."}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Fehler beim Speichern: {e}"}), 500
 
 # Starten des Servers (Render nutzt einen dynamischen Port)
 if __name__ == "__main__":

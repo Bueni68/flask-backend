@@ -58,7 +58,7 @@ function updateStatus() {
         });
 }
 
-// 🔹 Funktion zum Speichern der geplanten Verlassenszeit
+// Funktion zum Speichern der geplanten Verlassenszeit
 function sendLeaveTime() {
     let station = document.getElementById("station_select").value;
     let leaveTime = document.getElementById("leave_time").value;
@@ -72,7 +72,7 @@ function sendLeaveTime() {
         return;
     }
 
-    console.log("Sende Daten:", { station: station, leave_time: leaveTime });  // Ausgabe der zu sendenden Daten
+    console.log("Sende Daten:", { station: station, leave_time: leaveTime });
 
     fetch("/set_leave_time", {
         method: "POST",
@@ -83,7 +83,7 @@ function sendLeaveTime() {
     .then(data => {
         console.log("Server-Antwort:", data);  // Antwort des Servers anzeigen
         if (data.error) {
-            alert(data.error);  // Fehler anzeigen, falls die Station nicht belegt ist
+            alert(data.error);  // Fehler anzeigen, falls Station nicht belegt
         } else {
             alert("Verlassenszeit gespeichert!");
         }
@@ -91,6 +91,32 @@ function sendLeaveTime() {
     .catch(error => {
         console.error("Fehler:", error);
         alert("Es gab einen Fehler bei der Anfrage!");
+    });
+}
+
+// Funktion zum Hinzufügen einer RFID-Karte
+function addRfidCard() {
+    let rfidUid = document.getElementById("rfid_uid").value.trim();
+    let rfidName = document.getElementById("rfid_name").value.trim();
+    let messageBox = document.getElementById("rfid_message");
+
+    if (!rfidUid || !rfidName) {
+        messageBox.textContent = "Bitte RFID-UID und Namen eingeben!";
+        return;
+    }
+
+    fetch("/add_rfid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rfid_uid: rfidUid, name: rfidName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        messageBox.textContent = data.message || data.error;
+    })
+    .catch(error => {
+        console.error("Fehler:", error);
+        messageBox.textContent = "Fehler beim Speichern!";
     });
 }
 
