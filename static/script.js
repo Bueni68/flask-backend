@@ -106,6 +106,8 @@ function addRfidCard() {
         return;
     }
 
+    console.log("Sende Daten:", { rfid_uid: rfidUid, name: rfidName });
+
     fetch("/add_rfid", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -124,6 +126,12 @@ function addRfidCard() {
         messageBox.textContent = "Fehler beim Speichern!";
     });
 }
+
+// Simulation einer RFID-UID, die vom ESP32 kommt (diese wird durch die tatsächliche UID vom ESP32 ersetzt)
+const rfidUidFromESP = "1234567890";  // Beispiel-UID, diese kommt normalerweise vom ESP32
+
+// Zeige die RFID-UID im Eingabefeld an
+document.getElementById("rfid_uid").value = rfidUidFromESP;
 
 updateStatus(); // Erstes Update sofort ausführen
 

@@ -34,10 +34,15 @@
     <ul id="estimated_times"></ul>
 
     <h2>RFID-Karte hinzufügen</h2>
-    <label for="rfid_uid">RFID-UID:</label>
-    <input type="text" id="rfid_uid" placeholder="RFID UID scannen oder eingeben">
+
+    <label for="rfid_uid">RFID UID:</label>
+    <input type="text" id="rfid_uid" disabled>
+
+    <br><br>
+
     <label for="rfid_name">Name:</label>
     <input type="text" id="rfid_name" placeholder="Namen eingeben">
+
     <button onclick="addRfidCard()">Speichern</button>
 
     <p id="rfid_message"></p>
