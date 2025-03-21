@@ -54,6 +54,16 @@ def save_data(data):
 def count_occupied_stations(stations):
     return sum(1 for status in stations.values() if status == "belegt")
 
+# Hilfsfunktion zum Erstellen der RFID-Datei, falls sie nicht existiert
+def create_rfid_users_file():
+    if not os.path.exists("rfid_users.json"):
+        # Erstelle eine leere JSON-Datei
+        with open("rfid_users.json", "w") as file:
+            json.dump({}, file, indent=4)  # Leeres Dictionary speichern
+
+# Rufe die Funktion auf, wenn der Server startet
+create_rfid_users_file()
+
 # Hauptseite
 @app.route("/")
 def index():
@@ -169,7 +179,7 @@ def set_leave_time():
     except Exception as e:
         return jsonify({"error": f"Fehler beim Speichern der Verlassenszeit: {e}"}), 500
     
-# API zum Speichern einer neuer RFID-Karten
+# API zum Speichern einer neuen RFID-Karte
 @app.route("/add_rfid", methods=["POST"])
 def add_rfid():
     """Fügt eine neue RFID-Karte mit Platzhalternamen zur JSON-Datei hinzu."""
@@ -201,7 +211,8 @@ def add_rfid():
     except Exception as e:
         return jsonify({"error": f"Fehler beim Speichern: {e}"}), 500
 
-# Starten des Servers (Render nutzt einen dynamischen Port)
+# Server starten und sicherstellen, dass die Datei vorhanden ist
 if __name__ == "__main__":
+    create_rfid_users_file()  # Stelle sicher, dass die Datei existiert
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
