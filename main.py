@@ -83,6 +83,21 @@ def update_status():
     new_data = request.get_json()
     current_data = load_data()
 
+    # Wenn der Name unbekannt ist, holen wir den Namen aus der rfid_users.json
+    rfid_uid = new_data["history"][0]["rfid_uid"]
+    with open("rfid_users.json", "r") as file:
+        user_data = json.load(file)
+
+    if rfid_uid in user_data:
+        name = user_data[rfid_uid]
+    else:
+        name = "Unbekannt"
+
+    # Update history mit dem Namen
+    new_data["history"][0]["name"] = name
+    # Speichern der Daten
+    save_data(current_data)
+
     # Hole die Zeitzone für Deutschland
     germany_tz = pytz.timezone('Europe/Berlin')
 
@@ -157,14 +172,14 @@ def set_leave_time():
 # API zum Speichern einer neuer RFID-Karten
 @app.route("/add_rfid", methods=["POST"])
 def add_rfid():
-    """Fügt eine neue RFID-Karte mit Namen zur JSON-Datei hinzu."""
+    """Fügt eine neue RFID-Karte mit Platzhalternamen zur JSON-Datei hinzu."""
     try:
         data = request.get_json()
         rfid_uid = data.get("rfid_uid")
-        name = data.get("name")
+        name = data.get("name", "Unbekannt")  # Standardname ist "Unbekannt"
 
-        if not rfid_uid or not name:
-            return jsonify({"error": "RFID-UID und Name erforderlich!"}), 400
+        if not rfid_uid:
+            return jsonify({"error": "RFID-UID erforderlich!"}), 400
 
         # Bestehende RFID-Daten laden
         with open("rfid_users.json", "r") as file:
@@ -174,7 +189,7 @@ def add_rfid():
         if rfid_uid in user_data:
             return jsonify({"error": "RFID-Karte existiert bereits!"}), 400
 
-        # Neue UID mit Namen speichern
+        # Neue UID mit Namen speichern (Standardname "Unbekannt")
         user_data[rfid_uid] = name
 
         # Aktualisierte Daten zurück in JSON-Datei speichern

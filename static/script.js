@@ -1,3 +1,4 @@
+// Funktion zum Status aktualisieren
 function updateStatus() {
     fetch("/status")
         .then(response => response.json())
@@ -112,7 +113,11 @@ function addRfidCard() {
     })
     .then(response => response.json())
     .then(data => {
-        messageBox.textContent = data.message || data.error;
+        if (data.success) {
+            messageBox.textContent = "RFID-Karte erfolgreich hinzugefügt!";
+        } else {
+            messageBox.textContent = data.message || data.error;
+        }
     })
     .catch(error => {
         console.error("Fehler:", error);
