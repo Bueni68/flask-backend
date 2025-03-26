@@ -8,30 +8,44 @@
 </head>
 <body>
     <h1>Labor Belegungsstatus</h1>
+
+    <!-- Status der Stationen -->
     <div id="status">
         <p>Lade Daten...</p>
     </div>
 
     <h2>Anzahl belegter Stationen: <span id="occupied_stations_count">0</span></h2>
 
+    <!-- Historie der letzten Nutzer -->
     <h3>Letzte Nutzer:</h3>
     <ul id="history"></ul>
 
+    <!-- Geplante Verlassenszeiten -->
     <h2>Geplante Verlassenszeit setzen</h2>
-<label for="station_select">Station:</label>
-<select id="station_select">
-    <option value="">-- Wähle eine Station --</option>
-    <option value="Station 1">Station 1</option>
-    <option value="Station 2">Station 2</option>
-</select>
+    <label for="station_select">Station:</label>
+    <select id="station_select">
+        <option value="">-- Wähle eine Station --</option>
+        <option value="Station 1">Station 1</option>
+        <option value="Station 2">Station 2</option>
+    </select>
 
-<label for="leave_time">Uhrzeit:</label>
-<input type="time" id="leave_time">
+    <label for="leave_time">Uhrzeit:</label>
+    <input type="time" id="leave_time">
 
-<button onclick="sendLeaveTime()">Speichern</button>
+    <button onclick="sendLeaveTime()">Speichern</button>
 
-<h3>Voraussichtliche Freigabezeiten:</h3>
-<ul id="estimated_times"></ul>
+    <h3>Voraussichtliche Freigabezeiten:</h3>
+    <ul id="estimated_times"></ul>
+
+    <!-- Eingabefelder für den Kartennamen -->
+    <h2>Kartennamen setzen</h2>
+    <label for="card_uid">UID der Karte:</label>
+    <input type="text" id="card_uid" placeholder="Karten UID" required>
+
+    <label for="card_name">Name des Benutzers:</label>
+    <input type="text" id="card_name" placeholder="Benutzername" required>
+
+    <button onclick="setCardName()">Kartenname speichern</button>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

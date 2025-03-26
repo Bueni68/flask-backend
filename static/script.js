@@ -11,12 +11,17 @@ function updateStatus() {
 
                 // Station-Status holen oder "unbekannt" setzen
                 let status = data.stations[station] || "unbekannt";
+                let user = data.card_names[station];  // Den Kartennamen auslesen
 
                 // CSS-Klasse setzen (falls unbekannt, neutral lassen)
                 div.className = `station ${status}`;
 
-                // Textinhalt setzen
-                div.textContent = `${station}: ${status}`;
+                // Textinhalt setzen (inkl. Kartennamen, wenn verfügbar)
+                if (status === "belegt" && user) {
+                    div.textContent = `${station}: ${status} - Benutzer: ${user}`;
+                } else {
+                    div.textContent = `${station}: ${status}`;
+                }
 
                 // Div zur Webseite hinzufügen
                 statusDiv.appendChild(div);
@@ -31,7 +36,8 @@ function updateStatus() {
             if (Array.isArray(data.history)) {
                 data.history.forEach(entry => {
                     let li = document.createElement("li");
-                    li.textContent = `${entry.name} - ${entry.station} (${entry.action}) um ${entry.timestamp}`;
+                    let user = data.card_names[entry.station] || "Unbekannt";  // Benutzername anzeigen, falls vorhanden
+                    li.textContent = `${user} - ${entry.station} (${entry.action}) um ${entry.timestamp}`;
                     historyList.appendChild(li);
                 });
             } else {
@@ -86,6 +92,38 @@ function sendLeaveTime() {
             alert(data.error);  // Fehler anzeigen, falls Station nicht belegt
         } else {
             alert("Verlassenszeit gespeichert!");
+        }
+    })
+    .catch(error => {
+        console.error("Fehler:", error);
+        alert("Es gab einen Fehler bei der Anfrage!");
+    });
+}
+
+// 🔹 Funktion zum Setzen des Kartennamens
+function setCardName() {
+    let cardUid = document.getElementById("card_uid").value;  // UID der Karte
+    let cardName = document.getElementById("card_name").value;  // Name der Person
+
+    if (!cardUid || !cardName) {
+        alert("Bitte UID und Name der Karte eingeben!");
+        return;
+    }
+
+    console.log("Sende Kartennamen:", { card_uid: cardUid, name: cardName });
+
+    fetch("/set_card_name", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ card_uid: cardUid, name: cardName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Server-Antwort:", data);  // Antwort des Servers anzeigen
+        if (data.error) {
+            alert(data.error);  // Fehler anzeigen, falls etwas schief geht
+        } else {
+            alert(`Name für Karte ${cardUid} gesetzt!`);
         }
     })
     .catch(error => {

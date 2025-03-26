@@ -24,7 +24,8 @@ def load_data():
         "stations": {"Station 1": "frei", "Station 2": "frei"},
         "people_count": 0,
         "history": [],
-        "estimated_times": []
+        "estimated_times": [],
+        "card_names": {}  # Hier wird die Kartennamen gespeichert
     }
 
     # Versuchen, die Datei zu öffnen und die Daten zu laden
@@ -35,6 +36,10 @@ def load_data():
             # Falls "estimated_times" fehlt, füge es als leere Liste hinzu
             if "estimated_times" not in data:
                 data["estimated_times"] = []
+
+            # Falls "card_names" fehlt, füge es als leere Struktur hinzu
+            if "card_names" not in data:
+                data["card_names"] = {}
 
             # Falls die gespeicherten Daten fehlerhaft sind (z. B. zu viele Stationen), zurücksetzen
             if "stations" not in data or len(data["stations"]) > 2:
@@ -92,7 +97,8 @@ def update_status():
             "stations": {"Station 1": "frei", "Station 2": "frei"},
             "people_count": 0,
             "history": [],
-            "estimated_times": []
+            "estimated_times": [],
+            "card_names": {}
         }
         save_data(current_data)
         return jsonify({"message": "Alle Daten zurückgesetzt!"})
@@ -153,6 +159,29 @@ def set_leave_time():
         return jsonify({"message": "Verlassenszeit gespeichert"}), 200
     except Exception as e:
         return jsonify({"error": f"Fehler beim Speichern der Verlassenszeit: {e}"}), 500
+
+# API zum Setzen des Kartennamens (wird vom ESP32 verwendet)
+@app.route("/set_card_name", methods=["POST"])
+def set_card_name():
+    try:
+        data = request.json  # Empfange die Daten im JSON-Format
+        card_uid = data["card_uid"]  # Hol die UID der Karte
+        name = data["name"]  # Hol den Namen des Karteninhabers
+
+        current_data = load_data()
+
+        # Prüfen, ob die Karte schon einen Namen hat
+        if card_uid in current_data["card_names"]:
+            return jsonify({"message": "Diese Karte hat bereits einen Namen!"}), 400
+        
+        # Setze den Namen für die Karte
+        current_data["card_names"][card_uid] = name
+        save_data(current_data)
+
+        return jsonify({"message": f"Name für Karte {card_uid} gesetzt!"}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Fehler beim Setzen des Namens: {e}"}), 500
 
 # Starten des Servers (Render nutzt einen dynamischen Port)
 if __name__ == "__main__":

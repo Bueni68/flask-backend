@@ -40,6 +40,13 @@ h1, h2, h3 {
     color: white;
 }
 
+.station.belegt .card-name {
+    font-size: 14px;
+    font-style: italic;
+    color: #fff;
+    margin-top: 5px;
+}
+
 /* Personenanzahl */
 #people_count {
     font-size: 24px;
@@ -63,6 +70,34 @@ h1, h2, h3 {
     box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Eingabefelder für Kartennamen */
+input[type="text"], input[type="time"], select {
+    padding: 8px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 80%;
+    max-width: 300px;
+    font-size: 16px;
+}
+
+button {
+    background-color: #0077cc;
+    color: white;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 80%;
+    max-width: 300px;
+}
+
+button:hover {
+    background-color: #005fa3;
+}
+
 /* Mobile Optimierung */
 @media (max-width: 600px) {
     body {
@@ -71,5 +106,9 @@ h1, h2, h3 {
 
     #status {
         grid-template-columns: 1fr;
+    }
+
+    input[type="text"], input[type="time"], select, button {
+        width: 100%;
     }
 }
