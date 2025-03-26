@@ -18,34 +18,20 @@
     <ul id="history"></ul>
 
     <h2>Geplante Verlassenszeit setzen</h2>
-    <label for="station_select">Station:</label>
-    <select id="station_select">
-        <option value="">-- Wähle eine Station --</option>
-        <option value="Station 1">Station 1</option>
-        <option value="Station 2">Station 2</option>
-    </select>
+<label for="station_select">Station:</label>
+<select id="station_select">
+    <option value="">-- Wähle eine Station --</option>
+    <option value="Station 1">Station 1</option>
+    <option value="Station 2">Station 2</option>
+</select>
 
-    <label for="leave_time">Uhrzeit:</label>
-    <input type="time" id="leave_time">
+<label for="leave_time">Uhrzeit:</label>
+<input type="time" id="leave_time">
 
-    <button onclick="sendLeaveTime()">Speichern</button>
+<button onclick="sendLeaveTime()">Speichern</button>
 
-    <h3>Voraussichtliche Freigabezeiten:</h3>
-    <ul id="estimated_times"></ul>
-
-    <h2>RFID-Karte hinzufügen</h2>
-
-    <label for="rfid_uid">RFID UID:</label>
-    <input type="text" id="rfid_uid" disabled>
-
-    <br><br>
-
-    <label for="rfid_name">Name:</label>
-    <input type="text" id="rfid_name" placeholder="Namen eingeben">
-
-    <button onclick="addRfidCard()">Speichern</button>
-
-    <p id="rfid_message"></p>
+<h3>Voraussichtliche Freigabezeiten:</h3>
+<ul id="estimated_times"></ul>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

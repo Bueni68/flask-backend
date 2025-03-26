@@ -1,4 +1,3 @@
-// Funktion zum Status aktualisieren
 function updateStatus() {
     fetch("/status")
         .then(response => response.json())
@@ -59,7 +58,7 @@ function updateStatus() {
         });
 }
 
-// Funktion zum Speichern der geplanten Verlassenszeit
+// 🔹 Funktion zum Speichern der geplanten Verlassenszeit
 function sendLeaveTime() {
     let station = document.getElementById("station_select").value;
     let leaveTime = document.getElementById("leave_time").value;
@@ -94,44 +93,6 @@ function sendLeaveTime() {
         alert("Es gab einen Fehler bei der Anfrage!");
     });
 }
-
-// Funktion zum Hinzufügen einer RFID-Karte
-function addRfidCard() {
-    let rfidUid = document.getElementById("rfid_uid").value.trim();
-    let rfidName = document.getElementById("rfid_name").value.trim();
-    let messageBox = document.getElementById("rfid_message");
-
-    if (!rfidUid || !rfidName) {
-        messageBox.textContent = "Bitte RFID-UID und Namen eingeben!";
-        return;
-    }
-
-    console.log("Sende Daten:", { rfid_uid: rfidUid, name: rfidName });
-
-    fetch("/add_rfid", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rfid_uid: rfidUid, name: rfidName })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            messageBox.textContent = "RFID-Karte erfolgreich hinzugefügt!";
-        } else {
-            messageBox.textContent = data.message || data.error;
-        }
-    })
-    .catch(error => {
-        console.error("Fehler:", error);
-        messageBox.textContent = "Fehler beim Speichern!";
-    });
-}
-
-// Simulation einer RFID-UID, die vom ESP32 kommt (diese wird durch die tatsächliche UID vom ESP32 ersetzt)
-const rfidUidFromESP = "1234567890";  // Beispiel-UID, diese kommt normalerweise vom ESP32
-
-// Zeige die RFID-UID im Eingabefeld an
-document.getElementById("rfid_uid").value = rfidUidFromESP;
 
 updateStatus(); // Erstes Update sofort ausführen
 
