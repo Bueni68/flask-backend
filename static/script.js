@@ -22,12 +22,12 @@ function updateStatus() {
                 let user = data.card_names?.[station] || "Unbekannt"; // Benutzername abrufen, falls vorhanden
 
                 // CSS-Klasse setzen
-                div.className = `station ${status}`;
+                div.className = station ${status};
 
                 // Textinhalt setzen (inkl. Benutzername, falls verfügbar)
                 div.textContent = (status === "belegt" && user)
-                    ? `${station}: ${status} - Benutzer: ${user}`
-                    : `${station}: ${status}`;
+                    ? ${station}: ${status} - Benutzer: ${user}
+                    : ${station}: ${status};
 
                 // Div zur Webseite hinzufügen
                 statusDiv.appendChild(div);
@@ -44,7 +44,7 @@ function updateStatus() {
                 data.history.forEach(entry => {
                     let li = document.createElement("li");
                     let user = data.card_names?.[entry.station] || "Unbekannt"; 
-                    li.textContent = `${user} - ${entry.station} (${entry.action}) um ${entry.timestamp || "???"}`;
+                    li.textContent = ${user} - ${entry.station} (${entry.action}) um ${entry.timestamp || "???"};
                     historyList.appendChild(li);
                 });
             } else {
@@ -130,7 +130,7 @@ function setCardName() {
         if (data.error) {
             alert(data.error);
         } else {
-            alert(`Name für Karte ${cardUid} gesetzt!`);
+            alert(Name für Karte ${cardUid} gesetzt!);
         }
     })
     .catch(error => {

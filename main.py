@@ -131,35 +131,6 @@ def update_status():
     save_data(current_data)
     return jsonify({"message": "Daten aktualisiert!"})
 
-# API zum Speichern der geplanten Verlassenszeit
-@app.route("/set_leave_time", methods=["POST"])
-def set_leave_time():
-    try:
-        data = request.json  # Empfange die Daten im JSON-Format
-        station = data["station"]  # Hol die Station
-        leave_time = data["leave_time"]  # Hol die Verlassenszeit
-
-        current_data = load_data()
-
-        # Prüfen, ob die Station existiert
-        if station not in current_data["stations"]:
-            return jsonify({"error": "Ungültige Station!"}), 400
-
-        # Prüfen, ob die ausgewählte Station belegt ist
-        if current_data["stations"].get(station) != "belegt":
-            return jsonify({"error": f"{station} ist derzeit nicht belegt. Bitte wähle eine andere Station."}), 400
-
-        # Debug-Ausgabe: Überprüfen, was in current_data gespeichert ist
-        print("Aktuelle Daten vor dem Speichern:", current_data)
-
-        # Speichern der Verlassenszeit für die spezifische Station
-        current_data["estimated_times"].append(f"{station}: {leave_time}")
-        save_data(current_data)
-
-        return jsonify({"message": "Verlassenszeit gespeichert"}), 200
-    except Exception as e:
-        return jsonify({"error": f"Fehler beim Speichern der Verlassenszeit: {e}"}), 500
-
 # API zum Setzen des Kartennamens (wird vom ESP32 verwendet)
 @app.route("/set_card_name", methods=["POST"])
 def set_card_name():
@@ -170,15 +141,11 @@ def set_card_name():
 
         current_data = load_data()
 
-        # Prüfen, ob die Karte schon einen Namen hat
-        if card_uid in current_data["card_names"]:
-            return jsonify({"message": "Diese Karte hat bereits einen Namen!"}), 400
-        
-        # Setze den Namen für die Karte
+        # Setze den Namen für die Karte (auch wenn die Karte schon einen Namen hat)
         current_data["card_names"][card_uid] = name
         save_data(current_data)
 
-        return jsonify({"message": f"Name für Karte {card_uid} gesetzt!"}), 200
+        return jsonify({"message": f"Name für Karte {card_uid} gesetzt!", "card_uid": card_uid, "name": name}), 200
 
     except Exception as e:
         return jsonify({"error": f"Fehler beim Setzen des Namens: {e}"}), 500

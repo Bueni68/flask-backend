@@ -10,7 +10,7 @@ h1, h2, h3 {
     color: #333;
 }
 
-/* Stationsanzeige */
+/* Status der Stationen */
 #status {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -33,13 +33,16 @@ h1, h2, h3 {
 .station.frei {
     background-color: #4caf50;  /* Grün */
     color: white;
+    font-weight: bold;
 }
 
 .station.belegt {
     background-color: #e53935;  /* Rot */
     color: white;
+    font-weight: bold;
 }
 
+/* Benutzername unter dem Status */
 .station.belegt .card-name {
     font-size: 14px;
     font-style: italic;
@@ -47,14 +50,14 @@ h1, h2, h3 {
     margin-top: 5px;
 }
 
-/* Personenanzahl */
-#people_count {
+/* Anzeige der belegten Stationen */
+#occupied_stations_count {
     font-size: 24px;
     font-weight: bold;
     color: #0077cc;
 }
 
-/* Historie-Liste */
+/* Historie der letzten Nutzer */
 #history {
     list-style-type: none;
     padding: 0;
@@ -102,6 +105,7 @@ button:hover {
 @media (max-width: 600px) {
     body {
         padding: 10px;
+        font-size: 14px;
     }
 
     #status {
@@ -110,5 +114,89 @@ button:hover {
 
     input[type="text"], input[type="time"], select, button {
         width: 100%;
+        padding: 12px;
+        font-size: 18px;
     }
+
+    button {
+        margin-top: 15px;
+    }
+}
+
+/* Zusatz für Karten-UID Anzeige */
+#card_uid_display {
+    font-size: 20px;
+    font-weight: bold;
+    color: #0077cc;
+    background-color: #f4f4f4;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+/* Voraussichtliche Freigabezeiten */
+#estimated_times {
+    list-style-type: none;
+    padding: 0;
+    margin: 10px auto;
+    max-width: 500px;
+}
+
+#estimated_times li {
+    background-color: #f4f4f4;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 5px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Stationen – zusätzliches Styling für "frei" oder "belegt" */
+.station.frei {
+    background-color: #4CAF50; /* Grün für "frei" */
+}
+
+.station.belegt {
+    background-color: #E53935; /* Rot für "belegt" */
+}
+
+/* Styling für die Stationsanzeige */
+.station {
+    padding: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.station.frei {
+    background-color: #4CAF50; /* Grün für freie Stationen */
+}
+
+.station.belegt {
+    background-color: #E53935; /* Rot für belegte Stationen */
+}
+
+/* Station-Status anzeigen */
+.station-status {
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Historie – Listeneinträge */
+#history li {
+    background: #fff;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Anzeige für voraussichtliche Freigabezeiten */
+#estimated_times li {
+    background-color: #E3F2FD;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
