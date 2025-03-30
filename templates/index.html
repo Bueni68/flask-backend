@@ -8,19 +8,15 @@
 </head>
 <body>
     <h1>Labor Belegungsstatus</h1>
-
-    <!-- Status der Stationen -->
     <div id="status">
         <p>Lade Daten...</p>
     </div>
 
     <h2>Anzahl belegter Stationen: <span id="occupied_stations_count">0</span></h2>
 
-    <!-- Historie der letzten Nutzer -->
     <h3>Letzte Nutzer:</h3>
     <ul id="history"></ul>
 
-    <!-- Geplante Verlassenszeiten -->
     <h2>Geplante Verlassenszeit setzen</h2>
     <label for="station_select">Station:</label>
     <select id="station_select">
@@ -37,17 +33,6 @@
     <h3>Voraussichtliche Freigabezeiten:</h3>
     <ul id="estimated_times"></ul>
 
-    <!-- Eingabefelder für den Kartennamen -->
-    <h2>Kartennamen setzen</h2>
-    <label for="card_uid">UID der Karte:</label>
-    <input type="text" id="card_uid" placeholder="Karten UID" readonly> <!-- Nur zur Anzeige, nicht bearbeitbar -->
-
-    <label for="card_name">Name des Benutzers:</label>
-    <input type="text" id="card_name" placeholder="Benutzername" required>
-
-    <button onclick="setCardName()">Kartenname speichern</button>
-
-    <!-- QR-Code Anzeige -->
     <h2>QR-Code für Web-URL:</h2>
     <img src="{{ url_for('static', filename='qrcode.png') }}" alt="QR-Code" id="qrcode">
 

@@ -2,51 +2,51 @@ function updateStatus() {
     fetch("/status")
         .then(response => response.json())
         .then(data => {
-            console.log("Empfangene Daten:", data); // Debugging
-
             let statusDiv = document.getElementById("status");
             statusDiv.innerHTML = "";
 
-            if (!data.stations) {
-                console.error("Fehler: 'stations' ist undefined!");
-                statusDiv.innerHTML = "<p>Fehler: Keine Stationsdaten vorhanden.</p>";
-                return;
-            }
-
-            Object.entries(data.stations).forEach(([station, info]) => {
+            let stations = Object.keys(data.stations);
+            stations.forEach(station => {
                 let div = document.createElement("div");
-                div.className = `${station} ${info.status}`;
-                div.textContent = info.status === "belegt"
-                    ? `${station}: ${info.status} - Benutzer: ${info.name}`
-                    : `${station}: ${info.status}`;
+
+                // Station-Status holen oder "unbekannt" setzen
+                let status = data.stations[station] || "unbekannt";
+
+                // CSS-Klasse setzen (falls unbekannt, neutral lassen)
+                div.className = `station ${status}`;
+
+                // Textinhalt setzen
+                div.textContent = `${station}: ${status}`;
+
+                // Div zur Webseite hinzufügen
                 statusDiv.appendChild(div);
             });
 
-            if (data.lastDetectedCard) {
-                document.getElementById("card_uid").value = data.lastDetectedCard; // Setze die UID im readonly-Feld
-            }
-            
-            document.getElementById("occupied_stations_count").textContent = data.occupied_stations || 0;
+            // Anzeige der belegten Stationen:
+            document.getElementById("occupied_stations_count").textContent = data.occupied_stations;
 
             let historyList = document.getElementById("history");
             historyList.innerHTML = "";
+
             if (Array.isArray(data.history)) {
                 data.history.forEach(entry => {
                     let li = document.createElement("li");
-                    li.textContent = `${entry.station} (${entry.action}) um ${entry.timestamp || "???"}`;
+                    li.textContent = `${entry.name} - ${entry.station} (${entry.action}) um ${entry.timestamp}`;
                     historyList.appendChild(li);
                 });
             } else {
                 historyList.innerHTML = "<li>Keine Historie vorhanden</li>";
             }
 
+            // Aktualisiert die Liste der geplanten Verlassenszeiten
             let estimatedList = document.getElementById("estimated_times");
             estimatedList.innerHTML = "";
+
             if (Array.isArray(data.estimated_times)) {
                 data.estimated_times.forEach(time => {
                     let li = document.createElement("li");
-                    li.textContent = time;
-                    estimatedList.appendChild(li);
+                    li.textContent = time + " Uhr";
+                    estimatedList.insertBefore(li, estimatedList.firstChild);
                 });
             } else {
                 estimatedList.innerHTML = "<li>Keine geplanten Zeiten</li>";
@@ -54,7 +54,7 @@ function updateStatus() {
         })
         .catch(error => console.error("Fehler beim Abrufen der Daten:", error))
         .finally(() => {
-            setTimeout(updateStatus, 5000); // Automatische Aktualisierung alle 5 Sekunden
+            setTimeout(updateStatus, 5000); // Warte 5 Sekunden, bevor das nächste Update kommt
         });
 }
 
@@ -72,16 +72,21 @@ function sendLeaveTime() {
         return;
     }
 
-    console.log("Sende Daten:", { station, leave_time: leaveTime });
+    console.log("Sende Daten:", { station: station, leave_time: leaveTime });
 
     fetch("/set_leave_time", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ station, leave_time: leaveTime })
+        body: JSON.stringify({ station: station, leave_time: leaveTime })
     })
     .then(response => response.json())
     .then(data => {
-        alert(data.success || data.error);
+        console.log("Server-Antwort:", data);  // Antwort des Servers anzeigen
+        if (data.error) {
+            alert(data.error);  // Fehler anzeigen, falls Station nicht belegt
+        } else {
+            alert("Verlassenszeit gespeichert!");
+        }
     })
     .catch(error => {
         console.error("Fehler:", error);
@@ -89,37 +94,4 @@ function sendLeaveTime() {
     });
 }
 
-// 🔹 Funktion zum Setzen des Kartennamens
-function setCardName() {
-    let cardUid = document.getElementById("card_uid").value;
-    let cardName = document.getElementById("card_name").value;
-
-    if (!cardUid || !cardName) {
-        alert("Bitte UID und Name der Karte eingeben!");
-        return;
-    }
-
-    console.log("Sende Kartennamen:", { card_uid: cardUid, name: cardName });
-
-    fetch("/set_card_name", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ card_uid: cardUid, name: cardName })
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.success || data.error);
-    })
-    .catch(error => {
-        console.error("Fehler:", error);
-        alert("Es gab einen Fehler bei der Anfrage!");
-    });
-}
-
-// Erstes Update sofort ausführen
-updateStatus();
-
-
-
-
-
+updateStatus(); // Erstes Update sofort ausführen

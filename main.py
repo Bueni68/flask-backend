@@ -24,8 +24,7 @@ def load_data():
         "stations": {"Station 1": "frei", "Station 2": "frei"},
         "people_count": 0,
         "history": [],
-        "estimated_times": [],
-        "card_names": {}  # Hier wird die Kartennamen gespeichert
+        "estimated_times": []
     }
 
     # Versuchen, die Datei zu öffnen und die Daten zu laden
@@ -36,10 +35,6 @@ def load_data():
             # Falls "estimated_times" fehlt, füge es als leere Liste hinzu
             if "estimated_times" not in data:
                 data["estimated_times"] = []
-
-            # Falls "card_names" fehlt, füge es als leere Struktur hinzu
-            if "card_names" not in data:
-                data["card_names"] = {}
 
             # Falls die gespeicherten Daten fehlerhaft sind (z. B. zu viele Stationen), zurücksetzen
             if "stations" not in data or len(data["stations"]) > 2:
@@ -53,7 +48,7 @@ def load_data():
 # Hilfsfunktion zum Speichern der Daten
 def save_data(data):
     with open(DATA_FILE, "w") as file:
-        json.dump(data, file, indent=4)
+        json.dump(data, file)
 
 # Hilfsfunktion zum Zählen der belegten Stationen
 def count_occupied_stations(stations):
@@ -97,8 +92,7 @@ def update_status():
             "stations": {"Station 1": "frei", "Station 2": "frei"},
             "people_count": 0,
             "history": [],
-            "estimated_times": [],
-            "card_names": {}
+            "estimated_times": []
         }
         save_data(current_data)
         return jsonify({"message": "Alle Daten zurückgesetzt!"})
@@ -131,68 +125,36 @@ def update_status():
     save_data(current_data)
     return jsonify({"message": "Daten aktualisiert!"})
 
-# API zum Setzen des Kartennamens (wird vom ESP32 verwendet)
-@app.route("/set_card_name", methods=["POST"])
-def set_card_name():
+# API zum Speichern der geplanten Verlassenszeit
+@app.route("/set_leave_time", methods=["POST"])
+def set_leave_time():
     try:
         data = request.json  # Empfange die Daten im JSON-Format
-        card_uid = data["card_uid"]  # Hol die UID der Karte
-        name = data["name"]  # Hol den Namen des Karteninhabers
+        station = data["station"]  # Hol die Station
+        leave_time = data["leave_time"]  # Hol die Verlassenszeit
 
         current_data = load_data()
 
-        # Setze den Namen für die Karte (auch wenn die Karte schon einen Namen hat)
-        current_data["card_names"][card_uid] = name
+        # Prüfen, ob die Station existiert
+        if station not in current_data["stations"]:
+            return jsonify({"error": "Ungültige Station!"}), 400
+
+        # Prüfen, ob die ausgewählte Station belegt ist
+        if current_data["stations"].get(station) != "belegt":
+            return jsonify({"error": f"{station} ist derzeit nicht belegt. Bitte wähle eine andere Station."}), 400
+
+        # Debug-Ausgabe: Überprüfen, was in current_data gespeichert ist
+        print("Aktuelle Daten vor dem Speichern:", current_data)
+
+        # Speichern der Verlassenszeit für die spezifische Station
+        current_data["estimated_times"].append(f"{station}: {leave_time}")
         save_data(current_data)
 
-        return jsonify({"message": f"Name für Karte {card_uid} gesetzt!", "card_uid": card_uid, "name": name}), 200
-
+        return jsonify({"message": "Verlassenszeit gespeichert"}), 200
     except Exception as e:
-        return jsonify({"error": f"Fehler beim Setzen des Namens: {e}"}), 500
-
-# API zum Setzen der Verlassenszeit (wird von `main.py2` übernommen)
-@app.route("/set_leave_time", methods=["POST"])
-def set_leave_time():
-    data = load_data()
-    req = request.json
-    station = req.get("station")
-    leave_time = req.get("leave_time")
-
-    if not station or not leave_time:
-        return jsonify({"error": "Fehlende Daten!"}), 400
-
-    data["estimated_times"].append(f"{station}: {leave_time}")
-    save_data(data)
-
-    return jsonify({"success": "Verlassenszeit gespeichert!"})
-
-# API zum Abrufen des erweiterten Status
-@app.route("/status", methods=["GET"])
-def status():
-    data = load_data()
-    station_status = data.get("stations", {})
-    card_names = data.get("card_names", {})
-
-    # Neue Struktur: Station → UID & Name (falls verfügbar)
-    updated_stations = {}
-    for station, uid in station_status.items():
-        # Falls kein Name zugeordnet ist, setze ihn auf "Unbekannt"
-        name = card_names.get(uid, "Unbekannt")
-        updated_stations[station] = {
-            "uid": uid,
-            "name": card_names.get(uid, "Unbekannt"),
-            "status": "belegt" if uid else "frei"
-        }
-
-    return jsonify({
-        "stations": updated_stations,
-        "occupied_stations": sum(1 for s in updated_stations.values() if s["status"] == "belegt"),
-        "history": data.get("history", []),
-        "estimated_times": data.get("estimated_times", [])
-    })
+        return jsonify({"error": f"Fehler beim Speichern der Verlassenszeit: {e}"}), 500
 
 # Starten des Servers (Render nutzt einen dynamischen Port)
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
