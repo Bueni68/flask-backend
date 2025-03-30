@@ -53,7 +53,7 @@ def load_data():
 # Hilfsfunktion zum Speichern der Daten
 def save_data(data):
     with open(DATA_FILE, "w") as file:
-        json.dump(data, file)
+        json.dump(data, file, indent=4)
 
 # Hilfsfunktion zum Zählen der belegten Stationen
 def count_occupied_stations(stations):
@@ -150,7 +150,47 @@ def set_card_name():
     except Exception as e:
         return jsonify({"error": f"Fehler beim Setzen des Namens: {e}"}), 500
 
+# API zum Setzen der Verlassenszeit (wird von `main.py2` übernommen)
+@app.route("/set_leave_time", methods=["POST"])
+def set_leave_time():
+    data = load_data()
+    req = request.json
+    station = req.get("station")
+    leave_time = req.get("leave_time")
+
+    if not station or not leave_time:
+        return jsonify({"error": "Fehlende Daten!"}), 400
+
+    data["estimated_times"].append(f"{station}: {leave_time}")
+    save_data(data)
+
+    return jsonify({"success": "Verlassenszeit gespeichert!"})
+
+# API zum Abrufen des erweiterten Status (wird von `main.py2` übernommen)
+@app.route("/status", methods=["GET"])
+def status():
+    data = load_data()
+    station_status = data.get("stations", {})
+    card_names = data.get("card_names", {})
+
+    # Neue Struktur: Station → UID & Name (falls verfügbar)
+    updated_stations = {}
+    for station, uid in station_status.items():
+        updated_stations[station] = {
+            "uid": uid,
+            "name": card_names.get(uid, "Unbekannt"),
+            "status": "belegt" if uid else "frei"
+        }
+
+    return jsonify({
+        "stations": updated_stations,
+        "occupied_stations": sum(1 for s in updated_stations.values() if s["status"] == "belegt"),
+        "history": data.get("history", []),
+        "estimated_times": data.get("estimated_times", [])
+    })
+
 # Starten des Servers (Render nutzt einen dynamischen Port)
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+

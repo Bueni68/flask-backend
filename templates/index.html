@@ -40,12 +40,16 @@
     <!-- Eingabefelder für den Kartennamen -->
     <h2>Kartennamen setzen</h2>
     <label for="card_uid">UID der Karte:</label>
-    <input type="text" id="card_uid" placeholder="Karten UID" required>
+    <input type="text" id="card_uid" placeholder="Karten UID" readonly> <!-- Nur zur Anzeige, nicht bearbeitbar -->
 
     <label for="card_name">Name des Benutzers:</label>
     <input type="text" id="card_name" placeholder="Benutzername" required>
 
     <button onclick="setCardName()">Kartenname speichern</button>
+
+    <!-- QR-Code Anzeige -->
+    <h2>QR-Code für Web-URL:</h2>
+    <img src="{{ url_for('static', filename='qrcode.png') }}" alt="QR-Code" id="qrcode">
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

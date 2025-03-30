@@ -2,7 +2,7 @@ function updateStatus() {
     fetch("/status")
         .then(response => response.json())
         .then(data => {
-            console.log("Empfangene Daten:", data); // 🛠 Debugging-Zeile
+            console.log("Empfangene Daten:", data); // Debugging
 
             let statusDiv = document.getElementById("status");
             statusDiv.innerHTML = "";
@@ -13,53 +13,40 @@ function updateStatus() {
                 return;
             }
 
-            let stations = Object.keys(data.stations);
-            stations.forEach(station => {
+            Object.entries(data.stations).forEach(([station, info]) => {
                 let div = document.createElement("div");
-
-                // Station-Status holen oder Standardwert setzen
-                let status = data.stations[station] || "unbekannt";
-                let user = data.card_names?.[station] || "Unbekannt"; // Benutzername abrufen, falls vorhanden
-
-                // CSS-Klasse setzen
-                div.className = station ${status};
-
-                // Textinhalt setzen (inkl. Benutzername, falls verfügbar)
-                div.textContent = (status === "belegt" && user)
-                    ? ${station}: ${status} - Benutzer: ${user}
-                    : ${station}: ${status};
-
-                // Div zur Webseite hinzufügen
+                div.className = `${station} ${info.status}`;
+                div.textContent = info.status === "belegt"
+                    ? `${station}: ${info.status} - Benutzer: ${info.name}`
+                    : `${station}: ${info.status}`;
                 statusDiv.appendChild(div);
             });
 
-            // Anzeige der belegten Stationen:
+            if (data.lastDetectedCard) {
+                document.getElementById("card_uid").value = data.lastDetectedCard; // Setze die UID im readonly-Feld
+            }
+            
             document.getElementById("occupied_stations_count").textContent = data.occupied_stations || 0;
 
-            // Historie aktualisieren
             let historyList = document.getElementById("history");
             historyList.innerHTML = "";
-
             if (Array.isArray(data.history)) {
                 data.history.forEach(entry => {
                     let li = document.createElement("li");
-                    let user = data.card_names?.[entry.station] || "Unbekannt"; 
-                    li.textContent = ${user} - ${entry.station} (${entry.action}) um ${entry.timestamp || "???"};
+                    li.textContent = `${entry.station} (${entry.action}) um ${entry.timestamp || "???"}`;
                     historyList.appendChild(li);
                 });
             } else {
                 historyList.innerHTML = "<li>Keine Historie vorhanden</li>";
             }
 
-            // Geplante Verlassenszeiten aktualisieren
             let estimatedList = document.getElementById("estimated_times");
             estimatedList.innerHTML = "";
-
             if (Array.isArray(data.estimated_times)) {
                 data.estimated_times.forEach(time => {
                     let li = document.createElement("li");
-                    li.textContent = time + " Uhr";
-                    estimatedList.insertBefore(li, estimatedList.firstChild);
+                    li.textContent = time;
+                    estimatedList.appendChild(li);
                 });
             } else {
                 estimatedList.innerHTML = "<li>Keine geplanten Zeiten</li>";
@@ -94,12 +81,7 @@ function sendLeaveTime() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("Server-Antwort:", data);
-        if (data.error) {
-            alert(data.error);
-        } else {
-            alert("Verlassenszeit gespeichert!");
-        }
+        alert(data.success || data.error);
     })
     .catch(error => {
         console.error("Fehler:", error);
@@ -126,12 +108,7 @@ function setCardName() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("Server-Antwort:", data);
-        if (data.error) {
-            alert(data.error);
-        } else {
-            alert(Name für Karte ${cardUid} gesetzt!);
-        }
+        alert(data.success || data.error);
     })
     .catch(error => {
         console.error("Fehler:", error);
