@@ -166,7 +166,7 @@ def set_leave_time():
 
     return jsonify({"success": "Verlassenszeit gespeichert!"})
 
-# API zum Abrufen des erweiterten Status (wird von `main.py2` übernommen)
+# API zum Abrufen des erweiterten Status
 @app.route("/status", methods=["GET"])
 def status():
     data = load_data()
@@ -176,6 +176,8 @@ def status():
     # Neue Struktur: Station → UID & Name (falls verfügbar)
     updated_stations = {}
     for station, uid in station_status.items():
+        # Falls kein Name zugeordnet ist, setze ihn auf "Unbekannt"
+        name = card_names.get(uid, "Unbekannt")
         updated_stations[station] = {
             "uid": uid,
             "name": card_names.get(uid, "Unbekannt"),
