@@ -94,4 +94,81 @@ function sendLeaveTime() {
     });
 }
 
+function personalizeRFID() {
+    let rfid = document.getElementById("rfid_input").value;
+    let name = document.getElementById("name_input").value;
+
+    if (!rfid || !name) {
+        alert("Bitte sowohl RFID als auch Name eingeben!");
+        return;
+    }
+
+    fetch("/personalize_rfid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rfid: rfid, name: name })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Fehler:", error);
+        alert("Es gab einen Fehler bei der Anfrage!");
+    });
+}
+
+function checkUID(uid) {
+    fetch("/check_uid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: uid })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "unknown") {
+            // Zeige Eingabefeld für unbekannte UID
+            document.getElementById("personalize_section").style.display = "block";
+            document.getElementById("unknown_uid").textContent = data.uid;
+        } else if (data.status === "known") {
+            alert(`UID ${data.uid} gehört zu ${data.name}`);
+        }
+    })
+    .catch(error => {
+        console.error("Fehler beim Überprüfen der UID:", error);
+    });
+}
+
+function saveName() {
+    let uid = document.getElementById("unknown_uid").textContent;
+    let name = document.getElementById("name_input").value;
+
+    if (!name) {
+        alert("Bitte einen Namen eingeben!");
+        return;
+    }
+
+    fetch("/save_name", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: uid, name: name })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            alert(data.message);
+            document.getElementById("personalize_section").style.display = "none";
+        }
+    })
+    .catch(error => {
+        console.error("Fehler beim Speichern des Namens:", error);
+    });
+}
+
 updateStatus(); // Erstes Update sofort ausführen

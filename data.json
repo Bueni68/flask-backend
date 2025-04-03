@@ -1,1 +1,13 @@
-{"stations": {"Station 1": "frei", "Station 2": "frei"}, "people_count": 0, "history": [], "estimated_times": []}
+{
+    "stations": {
+        "Station 1": "frei",
+        "Station 2": "frei"
+    },
+    "people_count": 0,
+    "history": [],
+    "estimated_times": [],
+    "rfid_users": {
+        "123456": "Max Mustermann",
+        "654321": "Erika Musterfrau"
+    }
+}

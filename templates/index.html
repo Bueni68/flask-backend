@@ -33,6 +33,14 @@
     <h3>Voraussichtliche Freigabezeiten:</h3>
     <ul id="estimated_times"></ul>
 
+    <h2>RFID-Karte personalisieren</h2>
+    <div id="personalize_section" style="display: none;">
+        <p>Unbekannte RFID-Karte erkannt: <span id="unknown_uid"></span></p>
+        <label for="name_input">Name:</label>
+        <input type="text" id="name_input" placeholder="Name eingeben">
+        <button onclick="saveName()">Speichern</button>
+    </div>
+
     <h2>QR-Code für Web-URL:</h2>
     <img src="{{ url_for('static', filename='qrcode.png') }}" alt="QR-Code" id="qrcode">
 

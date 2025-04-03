@@ -24,7 +24,8 @@ def load_data():
         "stations": {"Station 1": "frei", "Station 2": "frei"},
         "people_count": 0,
         "history": [],
-        "estimated_times": []
+        "estimated_times": [],
+        "rfid_users": {}  # Neu: RFID-Karten und ihre Namen
     }
 
     # Versuchen, die Datei zu öffnen und die Daten zu laden
@@ -32,17 +33,12 @@ def load_data():
         with open(DATA_FILE, "r") as file:
             data = json.load(file)
 
-            # Falls "estimated_times" fehlt, füge es als leere Liste hinzu
-            if "estimated_times" not in data:
-                data["estimated_times"] = []
-
-            # Falls die gespeicherten Daten fehlerhaft sind (z. B. zu viele Stationen), zurücksetzen
-            if "stations" not in data or len(data["stations"]) > 2:
-                return default_data
+            # Sicherstellen, dass alle Schlüssel vorhanden sind
+            if "rfid_users" not in data:
+                data["rfid_users"] = {}
 
             return data
     except (FileNotFoundError, json.JSONDecodeError):
-        # Falls Datei nicht existiert oder fehlerhaft ist, Standarddaten zurückgeben
         return default_data
 
 # Hilfsfunktion zum Speichern der Daten
@@ -108,6 +104,11 @@ def update_status():
             # Zeitstempel mit der richtigen Zeitzone (Deutschland)
             entry["timestamp"] = datetime.now(germany_tz).strftime("%Y-%m-%d %H:%M:%S")
 
+            # RFID-Nutzer personalisieren
+            rfid = entry.get("rfid")
+            if rfid:
+                entry["name"] = current_data["rfid_users"].get(rfid, "Unbekannt")
+
             # Doppelten Eintrag verhindern
             if entry not in current_data["history"]:  
                 current_data["history"].insert(0, entry)  # Neueste zuerst speichern
@@ -153,6 +154,69 @@ def set_leave_time():
         return jsonify({"message": "Verlassenszeit gespeichert"}), 200
     except Exception as e:
         return jsonify({"error": f"Fehler beim Speichern der Verlassenszeit: {e}"}), 500
+
+# API zum Personalisieren der RFID-Karte
+@app.route("/personalize_rfid", methods=["POST"])
+def personalize_rfid():
+    try:
+        data = request.json
+        rfid = data.get("rfid")
+        name = data.get("name")
+
+        if not rfid or not name:
+            return jsonify({"error": "RFID und Name sind erforderlich"}), 400
+
+        current_data = load_data()
+
+        # RFID-Karte mit Namen verknüpfen
+        current_data["rfid_users"][rfid] = name
+        save_data(current_data)
+
+        return jsonify({"message": f"RFID {rfid} wurde mit dem Namen {name} verknüpft."}), 200
+    except Exception as e:
+        return jsonify({"error": f"Fehler beim Personalisieren der RFID-Karte: {e}"}), 500
+
+# API zum Überprüfen der UID
+@app.route("/check_uid", methods=["POST"])
+def check_uid():
+    try:
+        data = request.json
+        uid = data.get("uid")
+
+        if not uid:
+            return jsonify({"error": "UID ist erforderlich"}), 400
+
+        current_data = load_data()
+
+        # Überprüfen, ob die UID bereits personalisiert ist
+        if uid in current_data["rfid_users"]:
+            name = current_data["rfid_users"][uid]
+            return jsonify({"uid": uid, "name": name, "status": "known"}), 200
+        else:
+            return jsonify({"uid": uid, "status": "unknown"}), 200
+    except Exception as e:
+        return jsonify({"error": f"Fehler beim Überprüfen der UID: {e}"}), 500
+
+# API zum Speichern des Namens für eine UID
+@app.route("/save_name", methods=["POST"])
+def save_name():
+    try:
+        data = request.json
+        uid = data.get("uid")
+        name = data.get("name")
+
+        if not uid or not name:
+            return jsonify({"error": "UID und Name sind erforderlich"}), 400
+
+        current_data = load_data()
+
+        # UID mit Namen verknüpfen
+        current_data["rfid_users"][uid] = name
+        save_data(current_data)
+
+        return jsonify({"message": f"UID {uid} wurde mit dem Namen {name} verknüpft."}), 200
+    except Exception as e:
+        return jsonify({"error": f"Fehler beim Speichern des Namens: {e}"}), 500
 
 # Starten des Servers (Render nutzt einen dynamischen Port)
 if __name__ == "__main__":
