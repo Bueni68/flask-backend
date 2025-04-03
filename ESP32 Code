@@ -1,0 +1,178 @@
+#include <SPI.h>
+#include <MFRC522.h>
+#include <LiquidCrystal.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+
+// LCD-Pins: RS, E, D4, D5, D6, D7 -> ESP32-Pins 13, 16, 14, 27, 26, 25
+LiquidCrystal lcd(13, 16, 14, 27, 26, 25);
+
+// RFID-RC522 Pins
+#define SS_PIN 5
+#define RST_PIN 4
+MFRC522 mfrc522(SS_PIN, RST_PIN);
+
+unsigned long startZeit = 0;
+unsigned long lastDetectionTime = 0;
+bool cardPresent = false;
+String lastUID = "";
+
+const unsigned long absenceThreshold = 5000;  // 5 Sekunden ohne Karte
+const char* ssid = "xxxx";
+const char* password = "xxxx";
+const char* serverUrl = "https://flask-backend-fga2.onrender.com/update";
+
+void setup() {
+    Serial.begin(115200);
+    Serial.println("WLAN-Debug-Modus aktiviert...");
+    Serial.println(WiFi.macAddress());
+    
+    lcd.begin(16, 2);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("WLAN verbinden...");
+    
+    WiFi.disconnect(true);
+    delay(1000);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+
+    int maxTries = 30;
+    while (WiFi.status() != WL_CONNECTED && maxTries > 0) {
+        Serial.print("Verbinde mit ");
+        Serial.print(ssid);
+        Serial.print("... Versuch ");
+        Serial.println(31 - maxTries);
+        delay(1000);
+        maxTries--;
+    }
+
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("WLAN VERBUNDEN!");
+        Serial.print("IP-Adresse: ");
+        Serial.println(WiFi.localIP());
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("WLAN verbunden!");
+    } else {
+        Serial.println("WLAN-Verbindung fehlgeschlagen!");
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("WLAN fehlgeschl.");
+        delay(2000);
+        ESP.restart();
+    }
+
+    delay(1000);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Warten auf Karte...");
+
+    SPI.begin();
+    mfrc522.PCD_Init();
+}
+
+// RFID UID auslesen
+String getCardUID() {
+    if (!mfrc522.PICC_IsNewCardPresent() || !mfrc522.PICC_ReadCardSerial()) {
+        return "";
+    }
+    String uidString = "";
+    for (byte i = 0; i < mfrc522.uid.size; i++) {
+        uidString += String(mfrc522.uid.uidByte[i], HEX);
+    }
+    Serial.println("RFID UID: " + uidString);
+    return uidString;
+}
+
+// Daten mit UID und Zeit senden
+void sendDataToServer(String action, String uid, int minutes) {
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("Keine WLAN-Verbindung!");
+        return;
+    }
+    
+    HTTPClient http;
+    http.begin(serverUrl);
+    http.addHeader("Content-Type", "application/json");
+    
+    String stationStatus = (action == "Verlassen") ? "frei" : "belegt";
+    String jsonPayload = "{";
+    jsonPayload += "\"stations\": {\"Station 1\": \"" + stationStatus + "\"},";
+    jsonPayload += "\"uid\": \"" + uid + "\",";
+    jsonPayload += "\"duration\": " + String(minutes) + ",";
+    jsonPayload += "\"history\": [{";
+    jsonPayload += "\"station\": \"Station 1\",";
+    jsonPayload += "\"action\": \"" + action + "\"";
+    jsonPayload += "}]}";
+    
+    int retries = 3;
+    while (retries > 0) {
+        int httpResponseCode = http.POST(jsonPayload);
+        Serial.print("Server-Antwort: ");
+        Serial.println(httpResponseCode);
+
+        if (httpResponseCode > 0) {
+            Serial.println("Daten erfolgreich gesendet!");
+            break;
+        } else {
+            Serial.println("Fehler beim Senden der Daten! Neuer Versuch...");
+            retries--;
+            delay(2000);
+        }
+    }
+    http.end();
+}
+
+void loop() {
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("WLAN getrennt! Versuche Neuverbindung...");
+        WiFi.disconnect();
+        WiFi.begin(ssid, password);
+        int reconnectTries = 10;
+        while (WiFi.status() != WL_CONNECTED && reconnectTries > 0) {
+            delay(1000);
+            reconnectTries--;
+        }
+        if (WiFi.status() == WL_CONNECTED) {
+            Serial.println("WLAN wieder verbunden!");
+        } else {
+            Serial.println("Neuverbindung fehlgeschlagen. Neustart...");
+            ESP.restart();
+        }
+    }
+    
+    String uid = getCardUID();
+    if (!uid.isEmpty()) {
+        lastDetectionTime = millis();
+        if (!cardPresent || uid != lastUID) {
+            cardPresent = true;
+            startZeit = millis();
+            lastUID = uid;
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("Besetzt seit:");
+            Serial.println("Karte erkannt");
+            sendDataToServer("Betreten", uid, 0);
+        }
+        
+        int minutes = (millis() - startZeit) / 60000;
+        static int lastMinutes = -1;
+        if (minutes != lastMinutes) {
+            lastMinutes = minutes;
+            sendDataToServer("Betreten", uid, minutes);
+            lcd.setCursor(0, 1);
+            lcd.print(minutes);
+            lcd.print(" min ");
+        }
+    } else if (cardPresent && millis() - lastDetectionTime > absenceThreshold) {
+        cardPresent = false;
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Warten auf Karte...");
+        Serial.println("Karte entfernt");
+        sendDataToServer("Verlassen", lastUID, 0);
+        lastUID = "";
+    }
+    delay(200);
+}
