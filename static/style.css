@@ -1,0 +1,256 @@
+/* Allgemeines Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    text-align: center;
+    padding: 20px;
+}
+
+h1, h2, h3 {
+    color: #333;
+}
+
+/* Status der Stationen */
+#status {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+/* Styling für die Stationen */
+.station {
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Farben für den Status */
+.station.frei {
+    background-color: #4caf50;  /* Grün */
+    color: white;
+    font-weight: bold;
+}
+
+.station.belegt {
+    background-color: #e53935;  /* Rot */
+    color: white;
+    font-weight: bold;
+}
+
+/* Benutzername unter dem Status */
+.station.belegt .card-name {
+    font-size: 14px;
+    font-style: italic;
+    color: #fff;
+    margin-top: 5px;
+}
+
+/* Anzeige der belegten Stationen */
+#occupied_stations_count {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0077cc;
+}
+
+/* Historie der letzten Nutzer */
+#history {
+    list-style-type: none;
+    padding: 0;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+#history li {
+    background: white;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 5px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Eingabefelder für Kartennamen */
+input[type="text"], input[type="time"], select {
+    padding: 8px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 80%;
+    max-width: 300px;
+    font-size: 16px;
+}
+
+button {
+    background-color: #0077cc;
+    color: white;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 80%;
+    max-width: 300px;
+}
+
+button:hover {
+    background-color: #005fa3;
+}
+
+/* Mobile Optimierung */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    #status {
+        grid-template-columns: 1fr;
+    }
+
+    input[type="text"], input[type="time"], select, button {
+        width: 100%;
+        padding: 12px;
+        font-size: 18px;
+    }
+
+    button {
+        margin-top: 15px;
+    }
+}
+
+/* Zusatz für Karten-UID Anzeige */
+#card_uid_display {
+    font-size: 20px;
+    font-weight: bold;
+    color: #0077cc;
+    background-color: #f4f4f4;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+/* Voraussichtliche Freigabezeiten */
+#estimated_times {
+    list-style-type: none;
+    padding: 0;
+    margin: 10px auto;
+    max-width: 500px;
+}
+
+#estimated_times li {
+    background-color: #f4f4f4;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 5px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Stationen – zusätzliches Styling für "frei" oder "belegt" */
+.station.frei {
+    background-color: #4CAF50; /* Grün für "frei" */
+}
+
+.station.belegt {
+    background-color: #E53935; /* Rot für "belegt" */
+}
+
+/* Styling für die Stationsanzeige */
+.station {
+    padding: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.frei {
+    background-color: #4CAF50; /* Grün für freie Stationen */
+}
+
+.belegt {
+    background-color: #E53935; /* Rot für belegte Stationen */
+}
+
+/* Station-Status anzeigen */
+.station-status {
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Historie – Listeneinträge */
+#history li {
+    background: #fff;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Anzeige für voraussichtliche Freigabezeiten */
+#estimated_times li {
+    background-color: #E3F2FD;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Modales Fenster */
+#fullNameFormContainer {
+    display: none;  /* Standardmäßig unsichtbar */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);  /* Dunkler Hintergrund */
+    z-index: 9999;  /* Über anderen Inhalten */
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modales Fenster selbst */
+.modal {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+}
+
+/* Styling für das Eingabefeld */
+#fullName {
+    padding: 10px;
+    width: 80%;
+    max-width: 300px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+#formButtons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    gap: 2em;
+}
+/* Styling für den Button */
+#formButtons button {
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 80%;
+    max-width: 300px;
+}

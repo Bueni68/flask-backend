@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labor Belegung</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Labor Belegungsstatus</h1>
+    <div id="status">
+        <p>Lade Daten...</p>
+    </div>
+
+    <h2>Anzahl belegter Stationen: <span id="occupied_stations_count">0</span></h2>
+
+    <h3>Letzte Aktivitäten:</h3>
+    <ul id="history"></ul>
+
+    <h2>Geplante Verlassenszeit setzen</h2>
+    <label for="station_select">Station:</label>
+    <select id="station_select">
+        <option value="">-- Wähle eine Station --</option>
+        <option value="Station 1">Station 1</option>
+        <option value="Station 2">Station 2</option>
+    </select>
+
+    <label for="leave_time">Uhrzeit:</label>
+    <input type="time" id="leave_time">
+
+    <button id="sendLeaveTimeButton">Speichern</button>
+
+    <h3>Voraussichtliche Freigabezeiten:</h3>
+    <ul id="estimated_times"></ul>
+
+    <div id="fullNameFormContainer">
+        <div class="modal">
+            <h2>Vollständigen Namen eingeben:</h2>
+            <form id="fullNameForm">
+                <input type="text" id="fullName" required placeholder="Vor- & Nachname" />
+                <!-- Counter Anzeige -->
+                <div id="userCounter" style="font-size: small;">Eingabefrist läuft ab in: <span id="counter">0</span> Sekunden</div>
+
+                <section id="formButtons">
+                    <button type="submit" class="frei">Speichern</button>
+                    <button type="button" class="belegt" id="deleteTempUserButton">Abbrechen</button>
+                </section>
+            </form>
+        </div>
+    </div>
+    
+    <!-- <h2>QR-Code für Web-URL:</h2>
+    <img src="{{ url_for('static', filename='qrcode.png') }}" alt="QR-Code" id="qrcode"> -->
+    
+    <script type="module" src="{{ url_for('static', filename='main.js') }}"></script>
+
+</body>
+</html>
+

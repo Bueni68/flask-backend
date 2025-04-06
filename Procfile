@@ -1,0 +1,1 @@
+web: gunicor main:app
