@@ -20,7 +20,7 @@ def get_status():
         history.append({
             "uid": uid,
             "station": entry.get("station", "Unbekannt"),
-            "action": "verlassen" if entry.get("end_time") else "betreten",
+            "action": "Verlassen" if entry.get("end_time") else "Betreten",
             "timestamp": entry.get("end_time") or entry.get("start_time"),
             "userFullName": full_name.strip(),
             "duration": entry.get("duration")

@@ -46,12 +46,12 @@ export function updateStatus(showFullNameForm) {
             lastFive.forEach(entry => {
                 const li = document.createElement("li");
                 let text = `${entry.userFullName} - ${entry.station} (${entry.action}) um ${entry.timestamp}`;
-                if (entry.action === "verlassen" && entry.duration) {
+                if (entry.action === "Verlassen" && entry.duration) {
                     text += ` – Genutzte Zeit: ${entry.duration}`;
                 }
                 li.textContent = text;
-                li.style.color = entry.action === "Betreten" ? "red" :
-                                 entry.action === "Verlassen" ? "green" : "gray";
+                li.style.color = entry.action === "betreten" ? "red" :
+                                 entry.action === "verlassen" ? "green" : "gray";
                 historyList.appendChild(li);
             });
 
