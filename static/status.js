@@ -50,8 +50,8 @@ export function updateStatus(showFullNameForm) {
                     text += ` – Genutzte Zeit: ${entry.duration}`;
                 }
                 li.textContent = text;
-                li.style.color = entry.action === "betreten" ? "red" :
-                                 entry.action === "verlassen" ? "green" : "gray";
+                li.style.color = entry.action === "Betreten" ? "red" :
+                                 entry.action === "Verlassen" ? "green" : "gray";
                 historyList.appendChild(li);
             });
 
